@@ -1,0 +1,35 @@
+# portwatch configuration file
+# Copy to /etc/portwatch/config.yaml and adjust as needed.
+
+# How often to scan open ports (Go duration string).
+interval: 30s
+
+# Path where port state is persisted between runs.
+state_file: /var/lib/portwatch/state.json
+
+# Rules define expected ports. Ports not matched by any rule trigger an alert.
+# Fields:
+#   port:     (required) 1-65535
+#   protocol: tcp | udp  (default: tcp)
+#   action:   allow | warn | alert  (default: alert)
+#   comment:  free-text description (optional)
+rules:
+  - port: 22
+    protocol: tcp
+    action: allow
+    comment: SSH
+
+  - port: 80
+    protocol: tcp
+    action: allow
+    comment: HTTP
+
+  - port: 443
+    protocol: tcp
+    action: allow
+    comment: HTTPS
+
+  - port: 8080
+    protocol: tcp
+    action: warn
+    comment: Dev HTTP — warn if open but do not hard-alert
