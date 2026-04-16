@@ -47,6 +47,11 @@ func (w *Watcher) Run(ctx context.Context) error {
 		w.logger.Warn("could not load previous state", "err", err)
 	}
 
+	// Run an immediate tick before waiting for the first interval.
+	if err := w.tick(); err != nil {
+		w.logger.Error("scan tick failed", "err", err)
+	}
+
 	ticker := time.NewTicker(w.cfg.Interval)
 	defer ticker.Stop()
 
