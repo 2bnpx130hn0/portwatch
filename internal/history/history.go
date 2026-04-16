@@ -7,23 +7,22 @@ import (
 	"time"
 )
 
-// Entry represents a single recorded port change event.
+// Entry represents a single recorded port event.
 type Entry struct {
-	Timestamp time.Time `json:"timestamp"`
-	Proto     string    `json:"proto"`
 	Port      int       `json:"port"`
+	Protocol  string    `json:"protocol"`
 	Action    string    `json:"action"`
-	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
-// History manages an append-only log of port change events.
+// History manages a persistent log of port events.
 type History struct {
 	mu      sync.Mutex
 	path    string
 	entries []Entry
 }
 
-// New loads existing history from path (if any) and returns a History.
+// New loads history from path, or starts empty if the file does not exist.
 func New(path string) (*History, error) {
 	h := &History{path: path}
 	data, err := os.ReadFile(path)
@@ -39,7 +38,7 @@ func New(path string) (*History, error) {
 	return h, nil
 }
 
-// Record appends an entry and persists the log to disk.
+// Record appends an entry, setting Timestamp if zero, and persists to disk.
 func (h *History) Record(e Entry) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -47,11 +46,11 @@ func (h *History) Record(e Entry) error {
 		e.Timestamp = time.Now().UTC()
 	}
 	h.entries = append(h.entries, e)
-	return h.save()
+	return h.persist()
 }
 
-// Entries returns a copy of all recorded entries.
-func (h *History) Entries() []Entry {
+// All returns a copy of all entries.
+func (h *History) All() []Entry {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	out := make([]Entry, len(h.entries))
@@ -59,8 +58,8 @@ func (h *History) Entries() []Entry {
 	return out
 }
 
-// save writes the current entries to disk (caller must hold mu).
-func (h *History) save() error {
+// persist writes entries to disk; caller must hold h.mu.
+func (h *History) persist() error {
 	data, err := json.MarshalIndent(h.entries, "", "  ")
 	if err != nil {
 		return err
