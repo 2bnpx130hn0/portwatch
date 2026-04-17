@@ -63,3 +63,10 @@ func TestFilter_NoMatch(t *testing.T) {
 		t.Fatalf("expected no results, got %+v", res)
 	}
 }
+
+func TestFilter_LimitExceedsEntries(t *testing.T) {
+	res := Filter{Limit: 100}.Apply(baseEntries())
+	if len(res) != 3 {
+		t.Fatalf("expected all 3 entries when limit exceeds total, got %d", len(res))
+	}
+}
