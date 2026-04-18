@@ -47,6 +47,21 @@ func TestEvaluate_CaseInsensitiveProtocol(t *testing.T) {
 	}
 }
 
+func TestEvaluate_FirstMatchingRuleWins(t *testing.T) {
+	rs := New([]Rule{
+		{Port: 80, Protocol: "tcp", Action: ActionIgnore},
+		{Port: 80, Protocol: "tcp", Action: ActionAlert},
+	})
+
+	action, found := rs.Evaluate(80, "tcp")
+	if !found {
+		t.Fatal("expected rule to be found for port 80/tcp")
+	}
+	if action != ActionIgnore {
+		t.Errorf("expected first matching rule to win: action %q, got %q", ActionIgnore, action)
+	}
+}
+
 func TestValidate_ValidRules(t *testing.T) {
 	rs := New([]Rule{
 		{Port: 443, Protocol: "tcp", Action: ActionAlert},
