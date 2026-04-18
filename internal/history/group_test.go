@@ -63,3 +63,20 @@ func TestGroupCounts(t *testing.T) {
 		t.Errorf("expected udp=2, got %d", counts["udp"])
 	}
 }
+
+func TestGroupBy_SingleEntry(t *testing.T) {
+	now := time.Now()
+	entries := []Entry{
+		{Port: 8080, Protocol: "tcp", Action: "allow", Timestamp: now},
+	}
+	groups := GroupBy(entries, GroupByPort)
+	if len(groups) != 1 {
+		t.Fatalf("expected 1 group, got %d", len(groups))
+	}
+	if groups[0].Key != "8080" {
+		t.Errorf("expected key 8080, got %s", groups[0].Key)
+	}
+	if len(groups[0].Entries) != 1 {
+		t.Errorf("expected 1 entry, got %d", len(groups[0].Entries))
+	}
+}
