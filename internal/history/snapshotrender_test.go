@@ -64,3 +64,14 @@ func TestRenderSnapshot_NilWriter(t *testing.T) {
 	// Should not panic
 	RenderSnapshot(baseline, current, "text", nil)
 }
+
+func TestRenderSnapshot_JSONNoChanges(t *testing.T) {
+	snap := TakeSnapshot([]Entry{{Port: 80, Protocol: "tcp", Action: "allow"}})
+	var buf bytes.Buffer
+	RenderSnapshot(snap, snap, "json", &buf)
+	out := buf.String()
+	// Even with no changes, JSON output should still contain the expected keys.
+	if !strings.Contains(out, "added") || !strings.Contains(out, "removed") {
+		t.Errorf("expected JSON keys even with no changes, got: %s", out)
+	}
+}
