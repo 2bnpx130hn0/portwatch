@@ -3,6 +3,8 @@ package history
 import "time"
 
 // NoteEntry attaches a free-text note to all entries matching port+protocol.
+// The note and its timestamp are stored in the entry's Labels map under the
+// keys "note" and "note_at" respectively.
 func NoteEntry(entries []Entry, port int, protocol, note string) []Entry {
 	updated := make([]Entry, len(entries))
 	for i, e := range entries {
@@ -44,4 +46,19 @@ func FilterNoted(entries []Entry) []Entry {
 		}
 	}
 	return out
+}
+
+// GetNote returns the note text and timestamp for the first entry matching
+// port+protocol, along with a boolean indicating whether a note was found.
+func GetNote(entries []Entry, port int, protocol string) (note, noteAt string, ok bool) {
+	for _, e := range entries {
+		if e.Port == port && equalFold(e.Protocol, protocol) {
+			if e.Labels != nil {
+				if v := e.Labels["note"]; v != "" {
+					return v, e.Labels["note_at"], true
+				}
+			}
+		}
+	}
+	return "", "", false
 }
